@@ -1,30 +1,24 @@
-import React from 'react';
-import { renderToString } from 'react-dom/server';
-import express from 'express';
-import App from './src/templates/blog.js';
-const app = express();
+const express = require("express");
 
-app.get('/*', (req, res) => {
-  const app = renderToString(<App />);
-  const helmet = Helmet.renderStatic();
+const port = process.env.PORT || 8080;
+var app = express();
 
-const html = `
-    <!doctype html>
-    <html ${helmet.htmlAttributes.toString()}>
-        <head>
-            ${helmet.title.toString()}
-            ${helmet.meta.toString()}
-            ${helmet.link.toString()}
-        </head>
-        <body ${helmet.bodyAttributes.toString()}>
-            <div id="app">
-                ${app}
-            </div>
-        </body>
-    </html>
-`;
+// List of all the files that should be served as-is
+let protected = ['transformed.js', 'main.css', 'favicon.ico']
 
-  res.send(html);
+app.get("*", (req, res) => {
+
+  let path = req.params['0'].substring(1)
+
+  if (protected.includes(path)) {
+    // Return the actual file
+    res.sendFile(`${__dirname}/build/${path}`);
+  } else {
+    // Otherwise, redirect to /build/index.html
+    res.sendFile(`${__dirname}/build/index.html`);
+  }
 });
 
-app.listen(3000);
+app.listen(port, () => {
+  console.log(`Server is up on port ${port}`);
+}); 
